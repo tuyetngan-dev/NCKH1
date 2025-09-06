@@ -2,17 +2,108 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Website</title>
-</head>
-<body>
-  <h1>Chào mừng đến với ChatBot AI👋</h1>
-  <p>Tại đây, trợ lí sẽ cung cấp cho bạn thông tin về xét tuyển Đại học, đồng thời giúp bạn đối chiếu bản thân với tiêu chí của trường. </p>
-  </p>Thông tin được công cụ tổng hợp từ các trang chính thống và cập nhật đến thời gian mới nhất.
-</body>
-</html>
 
 <head>
   <meta charset="UTF-8">
   <title>My Website</title>
   <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 </head>
+<body>
+  <h1>Chào mừng đến với ChatBot AI👋</h1>
+  <div class="intro-text">
+  <p>Tại đây, trợ lí sẽ cung cấp cho bạn thông tin về xét tuyển Đại học, đồng thời giúp bạn đối chiếu bản thân với tiêu chí của trường.</p>
+  <p>Hiện tại, ChatBot có thông tin về Kỳ thi THPTQG, Hướng dẫn đăng ký nguyện vọng xét tuyển, 4 trường Đại học: Bách Khoa, Công nghệ thông tin, Văn Lang và Y Dược.</p>
+  <p>(Thông tin được công cụ tổng hợp từ các trang chính thống và cập nhật đến thời gian mới nhất.)</p>
+</div>
+
+
+</body>
+    <header>
+    <h2>Hãy đặt câu hỏi cho ChatBot nhé!</h2>
+  </header>
+
+  <main>
+    <div id="chatbox"></div>
+    <div id="inputArea">
+      <input type="text" id="userInput" placeholder="Nhập câu hỏi...">
+      <button id="sendBtn">Gửi</button>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 tuyetngan</p>
+  </footer>
+
+  <script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+    const API_KEY = "AIzaSyD_JNEm2QjjEPVDSyYeFKGmZ5mRj1ah-N4";
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+
+    const chatbox = document.getElementById("chatbox");
+    const input = document.getElementById("userInput");
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+    // Lịch sử chat 
+    let chatHistory = [];
+
+    // Prompt hệ thống để định hướng bot
+    const systemPrompt = "Bạn là Chatbot tư vấn thi cử, chỉ trả lời về kỳ thi THPTQG và tuyển sinh Đại học tại Việt Nam. Nếu câu hỏi không liên quan thì hãy nói: 'Xin lỗi, tôi không biết'";
+
+    async function sendMessage() {
+      const userMsg = input.value.trim();
+      if (!userMsg) return;
+
+      // Hiển thị tin nhắn user
+      chatbox.innerHTML += `<div class="msg user">Bạn: ${userMsg}</div>`;
+      input.value = "";
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      // Thêm vào lịch sử
+      chatHistory.push({ role: "user", text: userMsg });
+
+      try {
+        // Ghép toàn bộ lịch sử thành prompt
+        let historyText = systemPrompt + "\n\n";
+        chatHistory.forEach((msg) => {
+          historyText +=
+            (msg.role === "user" ? "Người dùng: " : "Bot: ") + msg.text + "\n";
+        });
+
+        console.log("Prompt gửi đi:", historyText);
+
+        const result = await model.generateContent(historyText);
+        const botReply = result.response.text();
+        console.log("Bot trả lời:", botReply);
+
+        // Chuyển Markdown -> HTML bằng marked.js
+        const botHtml = marked.parse(botReply);
+
+        // Hiển thị bot trả lời
+        chatbox.innerHTML += `<div class="msg bot">${botHtml}</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        // Thêm vào lịch sử
+        chatHistory.push({ role: "bot", text: botReply });
+      } catch (err) {
+        console.error("Có lỗi xảy ra:", err);
+        chatbox.innerHTML += `<div class="msg bot">[Lỗi: ${err.message}]</div>`;
+      }
+    }
+
+    // Cho phép bấm Enter để gửi
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
+
