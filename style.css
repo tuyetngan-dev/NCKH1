@@ -17,6 +17,12 @@ h1 {
   margin: 6px 0;      
 }
 
+.caution {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  line-height: 1;   
+  margin: 6px 0;      
+}
 
   /* ========== PHẦN 1: Style chatbox & chỉnh màu ========= */
   body {
